@@ -587,10 +587,11 @@ def main() -> None:
         print(f"wrote {sun_out} ({open_n} Sunday fills, {excl_n} fill/both excluded closed/unknown)")
         lg_out = ROOT / large_href(city)
         lg_out.write_text(build_large(data, city), encoding="utf-8")
-        lg_unique = len({l["id"] for l in large_rows(data, city)})
-        lg_lb100 = len([l for l in large_rows(data, city) if mentions_100(l)])
-        lg_rv = len([l for l in large_rows(data, city) if rv_onboard_yes(l)])
-        lg_fk = len([l for l in large_rows(data, city) if mentions_forklift(l)])
+        _lg_rows = large_rows(data, city)
+        lg_unique = len({l["id"] for l in _lg_rows})
+        lg_lb100 = len([l for l in _lg_rows if mentions_100(l)])
+        lg_rv = len([l for l in _lg_rows if rv_onboard_yes(l)])
+        lg_fk = len([l for l in _lg_rows if mentions_forklift(l)])
         lg_omit = len(large_omitted_rows(data, city))
         print(
             f"wrote {lg_out} ({lg_unique} unique / {lg_lb100} 100-lb / {lg_rv} RV / {lg_fk} forklift / {lg_omit} omitted)"
