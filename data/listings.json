@@ -4,5 +4,49 @@
     "name": "Keep the Tank",
     "tagline": "Who actually fills your propane cylinder — not the locked cage Google sent you to.",
     "footer_note": "Call to confirm the attendant is on duty — hours change."
-  }
+  },
+  "cities": [
+    {
+      "slug": "denver",
+      "name": "Denver",
+      "metro_name": "Denver metro",
+      "state": "CO",
+      "blurb": "Front Range shops that fill a cylinder you already own, plus exchange cages labeled so you can see the difference."
+    }
+  ],
+  "listings": [
+    {
+      "id": "uhaul-arvada",
+      "city_slug": "denver",
+      "name": "U-Haul of Arvada",
+      "chain": "U-Haul",
+      "address": "6275 Wadsworth Byp",
+      "city": "Arvada",
+      "state": "CO",
+      "zip": "80003",
+      "phone": "303-423-1292",
+      "hours": {
+        "mon": "7:00am–7:00pm",
+        "tue": "7:00am–7:00pm",
+        "wed": "7:00am–7:00pm",
+        "thu": "7:00am–7:00pm",
+        "fri": "7:00am–8:00pm",
+        "sat": "7:00am–7:00pm",
+        "sun": "9:00am–5:00pm"
+      },
+      "hours_source": "office hours on the U-Haul propane location page",
+      "propane_hours_note": "Official page lists propane pay-at-pump during posted office hours.",
+      "service_type": "fill",
+      "tank_sizes": "3–100 lb portable cylinders; RV/camper; forklift; autogas",
+      "fills_rv_onboard": "yes",
+      "rv_access": "unknown",
+      "recertifies": "unknown",
+      "pay_at_pump": "yes",
+      "membership_required": "no",
+      "notes": "Northwest metro fill. Phone from official U-Haul propane results for Arvada. Call for current per-gallon price.",
+      "last_verified": "2026-08-29",
+      "source": "https://www.uhaul.com/Locations/Propane-near-Arvada-CO-80003/935054/",
+      "source_extra": []
+    }
+  ]
 }
