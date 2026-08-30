@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import re
 from html import escape
 from pathlib import Path
 from urllib.parse import quote_plus
@@ -79,7 +80,7 @@ def badge(service_type: str) -> str:
     return f'<span class="badge {cls}">{escape(label)}</span>'
 
 
-def listing_html(listing: dict, *, call_first: bool = False) -> str:
+def listing_html(listing: dict, *, call_first: bool = False, html_id: str | None = None) -> str:
     st = listing.get("service_type") or "fill"
     sun_cls, sun_text = sunday_status(listing)
     phone = listing.get("phone")
@@ -109,8 +110,9 @@ def listing_html(listing: dict, *, call_first: bool = False) -> str:
         else ""
     )
 
+    article_id = html_id or listing["id"]
     return f"""
-<article class="listing service-{escape(st)}" id="{escape(listing['id'])}">
+<article class="listing service-{escape(st)}" id="{escape(article_id)}">
   <div class="listing-head">
     {badge(st)}
     <h2>{escape(listing['name'])}</h2>
@@ -181,6 +183,10 @@ def sunday_href(city: dict) -> str:
     return f"{city['slug']}-sunday.html"
 
 
+def large_href(city: dict) -> str:
+    return f"{city['slug']}-large.html"
+
+
 def nav_html(current: str, cities: list[dict]) -> str:
     items = ['<a href="index.html"' + (' aria-current="page"' if current == "home" else "") + ">Home</a>"]
     for city in cities:
@@ -190,6 +196,9 @@ def nav_html(current: str, cities: list[dict]) -> str:
         sun = sunday_href(city)
         sun_cur = ' aria-current="page"' if current == f"{city['slug']}-sunday" else ""
         items.append(f'<a href="{escape(sun, quote=True)}"{sun_cur}>Open Sunday</a>')
+        lg = large_href(city)
+        lg_cur = ' aria-current="page"' if current == f"{city['slug']}-large" else ""
+        items.append(f'<a href="{escape(lg, quote=True)}"{lg_cur}>100-lb / RV / forklift</a>')
     return "<nav>" + " ".join(items) + "</nav>"
 
 
@@ -200,7 +209,8 @@ def build_index(data: dict) -> str:
     city_links = "\n".join(
         (
             f'<li><a class="cta" href="{escape(c["slug"], quote=True)}.html">{escape(c["metro_name"])} fill directory</a></li>\n'
-            f'<li><a class="cta" href="{escape(sunday_href(c), quote=True)}">Open Sunday</a></li>'
+            f'<li><a class="cta" href="{escape(sunday_href(c), quote=True)}">Open Sunday</a></li>\n'
+            f'<li><a class="cta" href="{escape(large_href(c), quote=True)}">100-lb, RV, and forklift fills</a></li>'
         )
         for c in cities
     )
@@ -280,6 +290,7 @@ def build_city(data: dict, city: dict) -> str:
         return f'<h2 class="section-label">{escape(title)}</h2>\n{extra}\n{inner}'
 
     sun_page = sunday_href(city)
+    lg_page = large_href(city)
     body = f"""
     <h1>{escape(city["metro_name"])} propane fill stations</h1>
     <p class="lede">{escape(city.get("blurb") or "")}</p>
@@ -289,12 +300,13 @@ def build_city(data: dict, city: dict) -> str:
       {badge("both")} fill and exchange on the same lot
       {badge("exchange")} cage / swap only
     </p>
-    <p class="note">Hours below are <em>store or office hours from the shop’s own page</em>. Propane often stops when the certified attendant leaves. Call before you drive. <a href="{escape(sun_page, quote=True)}"><strong>Open Sunday</strong></a> — fills with posted Sunday hours only.</p>
+    <p class="note">Hours below are <em>store or office hours from the shop's own page</em>. Propane often stops when the certified attendant leaves. Call before you drive. <a href="{escape(sun_page, quote=True)}"><strong>Open Sunday</strong></a> — fills with posted Sunday hours only. Need a 100-lb cylinder, RV onboard, or forklift tank? <a href="{escape(lg_page, quote=True)}"><strong>100-lb, RV, and forklift fills</strong></a>.</p>
     <nav class="filters" aria-label="Jump">
       <a href="#fills">Fills</a>
       <a href="#both">Both</a>
       <a href="#exchange">Exchange only</a>
       <a href="{escape(sun_page, quote=True)}">Open Sunday</a>
+      <a href="{escape(lg_page, quote=True)}">100-lb / RV / forklift</a>
     </nav>
     <div id="fills">{block("Fills — they put propane in your cylinder", fills)}</div>
     <div id="both">{block("Both — fill and exchange at the same shop", boths)}</div>
@@ -413,6 +425,153 @@ def build_sunday(data: dict, city: dict) -> str:
     )
 
 
+
+
+# ---------------------------------------------------------------------------
+# Large-tank page helpers
+# ---------------------------------------------------------------------------
+
+_EN_DASH_RE = re.compile(r"[\u2013\u2014-]")
+
+
+def _normalize_tank_sizes(text: str) -> str:
+    """Replace en-dash / em-dash / hyphen with space for simpler matching."""
+    return _EN_DASH_RE.sub(" ", text.lower())
+
+
+def mentions_100(listing: dict) -> bool:
+    """True if tank_sizes mentions 100 lb in any dash/hyphen variant."""
+    ts = listing.get("tank_sizes") or ""
+    n = _normalize_tank_sizes(ts)
+    return bool(re.search(r"\b100\s*lb\b", n))
+
+
+def mentions_forklift(listing: dict) -> bool:
+    ts = listing.get("tank_sizes") or ""
+    return "forklift" in ts.lower()
+
+
+def rv_onboard_yes(listing: dict) -> bool:
+    return str(listing.get("fills_rv_onboard") or "").lower() == "yes"
+
+
+def qualifies_large(listing: dict) -> bool:
+    """Fill or both, and at least one of: 100-lb, RV onboard, forklift."""
+    if listing.get("service_type") not in ("fill", "both"):
+        return False
+    return mentions_100(listing) or rv_onboard_yes(listing) or mentions_forklift(listing)
+
+
+def large_omit_why(listing: dict) -> str:
+    """Return a short reason string for fill/both listings not on large page."""
+    ts = listing.get("tank_sizes") or ""
+    if ts.lower() == "unknown" or not ts:
+        return "tank sizes unknown"
+    return "does not claim 100-lb, RV onboard, or forklift fills"
+
+
+def large_rows(data: dict, city: dict) -> list[dict]:
+    rows = [l for l in data["listings"] if l.get("city_slug") == city["slug"] and qualifies_large(l)]
+    rows.sort(key=lambda l: (SERVICE_ORDER.get(l.get("service_type"), 9), l.get("city") or "", l.get("name") or ""))
+    return rows
+
+
+def large_omitted_rows(data: dict, city: dict) -> list[dict]:
+    rows = [l for l in data["listings"] if l.get("city_slug") == city["slug"] and is_fill_capable(l) and not qualifies_large(l)]
+    rows.sort(key=lambda l: (l.get("city") or "", l.get("name") or ""))
+    return rows
+
+
+def build_large(data: dict, city: dict) -> str:
+    last = data["last_updated"]
+    footer = data["site"]["footer_note"]
+    metro = city["metro_name"]
+    city_page = f"{city['slug']}.html"
+
+    all_large = large_rows(data, city)
+    omitted = large_omitted_rows(data, city)
+
+    lb100 = [l for l in all_large if mentions_100(l)]
+    rv = [l for l in all_large if rv_onboard_yes(l)]
+    forklift = [l for l in all_large if mentions_forklift(l)]
+
+    # unique shops (a shop may appear in more than one section)
+    unique_ids = {l["id"] for l in all_large}
+    unique_n = len(unique_ids)
+
+    exchange_rows = [l for l in data["listings"] if l.get("city_slug") == city["slug"] and l.get("service_type") == "exchange"]
+
+    def section_block(title: str, anchor: str, items: list[dict], suffix: str) -> str:
+        if not items:
+            return ""
+        inner = "\n".join(
+            listing_html(l, call_first=True, html_id=f"{l['id']}-{suffix}")
+            for l in items
+        )
+        return f'<h2 class="section-label" id="{escape(anchor)}">{escape(title)}</h2>\n{inner}'
+
+    lb100_html = section_block(f"100-lb fills — {metro}", "lb100", lb100, "100lb")
+    rv_html = section_block(f"RV / onboard fills — {metro}", "rv", rv, "rv")
+    forklift_html = section_block(f"Forklift cylinder fills — {metro}", "forklift", forklift, "forklift")
+
+    omitted_items = []
+    for l in omitted:
+        why = large_omit_why(l)
+        omitted_items.append(
+            f'<li><a href="{escape(city_page, quote=True)}#{escape(l["id"], quote=True)}">'
+            f'{escape(l["name"])}</a> — {escape(l.get("city") or "")} · {escape(why)}</li>'
+        )
+    omitted_html = ""
+    if omitted_items:
+        omitted_html = (
+            f'<h2 class="section-label" id="omitted">Fill/both shops not on this page</h2>\n'
+            f'<p>These shops are in the <a href="{escape(city_page, quote=True)}">full {escape(metro)} directory</a> but do not claim 100-lb, RV onboard, or forklift fills. Click a name to go to its listing.</p>\n'
+            f'<ul class="plain">\n  ' + "\n  ".join(omitted_items) + "\n</ul>"
+        )
+
+    exchange_html = ""
+    if exchange_rows:
+        ex_links = " ".join(
+            f'<a href="{escape(city_page, quote=True)}#{escape(l["id"], quote=True)}">{escape(l["name"])}</a>'
+            for l in exchange_rows
+        )
+        exchange_html = (
+            f'<p class="note">Exchange-cage listings ({ex_links}) are on the '
+            f'<a href="{escape(city_page, quote=True)}#exchange">full {escape(metro)} directory</a>. '
+            f'A cage will not fill the cylinder you already own.</p>'
+        )
+
+    body = f"""
+    <h1>100-lb, RV, and forklift fills — {escape(metro)}</h1>
+    <p class="lede">Standard 20-lb grill cylinders are easy — most fill stations do them. This page is for larger jobs: 100-lb portable cylinders, tanks bolted to an RV, and forklift cylinders. Not every {escape(metro)} fill station handles these. The shops below say they do, or their chain policy says they do — call first to confirm the attendant and equipment are ready.</p>
+    <p class="count">{unique_n} unique shops · {len(lb100)} claim 100-lb · {len(rv)} claim RV onboard · {len(forklift)} claim forklift · {len(omitted)} fill/both shops omitted (no large-tank claim). A shop may appear in more than one section below.</p>
+    <p class="note">Lot access for large RVs is often unknown — call ahead. TSC 100-lb is chain policy; individual store equipment may vary. Visual safety inspection is not DOT recertification.</p>
+    <nav class="filters" aria-label="Jump">
+      <a href="#lb100">100-lb</a>
+      <a href="#rv">RV onboard</a>
+      <a href="#forklift">Forklift</a>
+      <a href="#omitted">Omitted fill/both</a>
+      <a href="{escape(city_page, quote=True)}">{escape(metro)} directory</a>
+    </nav>
+    {lb100_html}
+    {rv_html}
+    {forklift_html}
+    {omitted_html}
+    {exchange_html}
+"""
+    return page_shell(
+        f"100-lb, RV, and forklift fills — {metro} — Fill Not Exchange",
+        nav_html(f"{city['slug']}-large", data["cities"]),
+        body,
+        last,
+        footer,
+        description=(
+            f"{metro} propane fill stations that handle 100-lb cylinders, RV onboard tanks, "
+            "and forklift cylinders. Call first; lot access and attendant hours vary."
+        ),
+    )
+
+
 def main() -> None:
     data = load()
     (ROOT / "index.html").write_text(build_index(data), encoding="utf-8")
@@ -426,6 +585,16 @@ def main() -> None:
         open_n = len(sunday_open_rows(data, city))
         excl_n = len(sunday_excluded_rows(data, city))
         print(f"wrote {sun_out} ({open_n} Sunday fills, {excl_n} fill/both excluded closed/unknown)")
+        lg_out = ROOT / large_href(city)
+        lg_out.write_text(build_large(data, city), encoding="utf-8")
+        lg_unique = len({l["id"] for l in large_rows(data, city)})
+        lg_lb100 = len([l for l in large_rows(data, city) if mentions_100(l)])
+        lg_rv = len([l for l in large_rows(data, city) if rv_onboard_yes(l)])
+        lg_fk = len([l for l in large_rows(data, city) if mentions_forklift(l)])
+        lg_omit = len(large_omitted_rows(data, city))
+        print(
+            f"wrote {lg_out} ({lg_unique} unique / {lg_lb100} 100-lb / {lg_rv} RV / {lg_fk} forklift / {lg_omit} omitted)"
+        )
     print(f"{len(data['listings'])} listings, {len(data['cities'])} cities")
 
 
