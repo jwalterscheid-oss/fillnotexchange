@@ -354,6 +354,41 @@
       "source_extra": []
     },
     {
+      "id": "uhaul-alameda",
+      "city_slug": "denver",
+      "name": "U-Haul at Alameda Ave",
+      "chain": "U-Haul",
+      "address": "2645 W Alameda Ave",
+      "city": "Denver",
+      "state": "CO",
+      "zip": "80219",
+      "phone": "303-922-8225",
+      "hours": {
+        "mon": "7:00am–7:00pm",
+        "tue": "7:00am–7:00pm",
+        "wed": "7:00am–7:00pm",
+        "thu": "7:00am–7:00pm",
+        "fri": "7:00am–8:00pm",
+        "sat": "7:00am–7:00pm",
+        "sun": "9:00am–5:00pm"
+      },
+      "hours_source": "office hours on the U-Haul propane location page",
+      "propane_hours_note": "Official page lists propane pay-at-pump during posted office hours.",
+      "service_type": "fill",
+      "tank_sizes": "3 lb up to 100 lb; RV/camper; forklift; autogas (chain page for this location)",
+      "fills_rv_onboard": "yes",
+      "rv_access": "unknown",
+      "recertifies": "unknown",
+      "pay_at_pump": "yes",
+      "membership_required": "no",
+      "notes": "Southwest Denver fill, 4 blocks east of Federal. Official propane page states 3–100 lb plus RVs, campers, forklift tanks, and autogas. Phone from U-Haul’s Denver 80219 location-results listing for this same store (not printed on the propane page). Visual safety inspection is not DOT recertification. Call for current per-gallon price.",
+      "last_verified": "2026-08-29",
+      "source": "https://www.uhaul.com/Locations/Propane-near-Denver-CO-80219/935050/",
+      "source_extra": [
+        "https://www.uhaul.com/Locations/Denver-CO-80219/Results/"
+      ]
+    },
+    {
       "id": "uhaul-garrison-jewell",
       "city_slug": "denver",
       "name": "U-Haul at Garrison & Jewell",
@@ -586,6 +621,41 @@
       "source": "https://aaapropane.com/products-services/",
       "source_extra": [
         "https://aaapropane.com/"
+      ]
+    },
+    {
+      "id": "suburban-lakewood",
+      "city_slug": "denver",
+      "name": "Suburban Propane – Lakewood",
+      "chain": "Suburban Propane",
+      "address": "5725 W 11th Ave",
+      "city": "Lakewood",
+      "state": "CO",
+      "zip": "80214",
+      "phone": "800-776-7263",
+      "hours": {
+        "mon": "8:00am–5:00pm",
+        "tue": "8:00am–5:00pm",
+        "wed": "8:00am–5:00pm",
+        "thu": "8:00am–5:00pm",
+        "fri": "8:00am–5:00pm",
+        "sat": "closed",
+        "sun": "closed"
+      },
+      "hours_source": "retail office hours on the official Suburban Propane Denver/Lakewood location page",
+      "propane_hours_note": "Retail office hours Mon–Fri 8:00am–5:00pm; Sat–Sun closed. Cylinder-refill window vs office hours was not posted separately — call first.",
+      "service_type": "fill",
+      "tank_sizes": "cylinder refills and forklift cylinder service (no lb size list on the office page)",
+      "fills_rv_onboard": "unknown",
+      "rv_access": "unknown",
+      "recertifies": "unknown",
+      "pay_at_pump": "unknown",
+      "membership_required": "no",
+      "notes": "Dealer office labeled a Customer Retail Location. Official page lists Cylinder Refills and Forklift Cylinder Service among services offered. Phone printed on the page is the national 24/7 line 1-800-PROPANE (800-776-7263); a local direct number was not on that page. 100-lb and RV onboard are not claimed. Weekdays only.",
+      "last_verified": "2026-08-29",
+      "source": "https://www.suburbanpropane.com/locations/denver-co/",
+      "source_extra": [
+        "https://www.suburbanpropane.com/all-locations/"
       ]
     },
     {
