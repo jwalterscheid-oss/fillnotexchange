@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://jwalterscheid-oss.github.io/fillnotexchange/sitemap.xml
