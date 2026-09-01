@@ -1,6 +1,6 @@
 # Keep the Tank
 
-A static directory of propane **fill** stations (not exchange cages). Live: homepage, Denver directory, Sunday fills, and 100-lb / RV / forklift.
+A static directory of propane **fill** stations (not exchange cages). Live: homepage, Denver metro, and Boulder / Lafayette / Longmont (plus Sunday, 100-lb/RV/forklift, and recert filters).
 
 Project slug on GitHub is `fillnotexchange`; the repo and Pages URL are unchanged.
 
