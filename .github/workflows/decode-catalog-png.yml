@@ -3,7 +3,7 @@ name: Decode catalog PNG
 on:
   push:
     paths:
-      - "keepthetank.png.b64"
+      - "keepthetank.svg"
       - ".github/workflows/decode-catalog-png.yml"
     branches:
       - main
@@ -21,10 +21,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Decode PNG and commit if changed
+      - name: Rasterize SVG to PNG and commit if changed
         run: |
           set -euo pipefail
-          base64 -d keepthetank.png.b64 > keepthetank.png
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq librsvg2-bin
+          rsvg-convert -w 1200 -h 630 keepthetank.svg -o keepthetank.png
           file keepthetank.png
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
