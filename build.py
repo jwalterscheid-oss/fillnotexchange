@@ -222,7 +222,7 @@ def build_index(data: dict) -> str:
     )
     body = f"""
     <h1>Fill the tank you already own.</h1>
-    <p class="lede">Google still mixes propane <em>fill</em> stations with locked exchange cages. This directory labels every row. Start with Denver. More Front Range cities later.</p>
+    <p class="lede">Google still mixes propane <em>fill</em> stations with locked exchange cages. This directory labels every row. Denver metro, Boulder / Lafayette / Longmont, and Colorado Springs are live.</p>
 
     <div class="compare">
       <section class="card fill-card">
